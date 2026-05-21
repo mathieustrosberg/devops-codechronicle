@@ -60,7 +60,7 @@ jobs:
               '{embeds: [{title: $title, description: $desc, url: $url, color: 0}]}')"
 
       - name: Deploy via FTP
-        uses: SamKirkland/FTP-Deploy-Action@4.3.4
+        uses: SamKirkland/FTP-Deploy-Action@4.3.2
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
