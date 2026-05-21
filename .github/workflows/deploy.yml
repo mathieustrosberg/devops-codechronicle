@@ -1,0 +1,82 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build static site
+        run: node scripts/build.js
+
+      - name: Get latest article info
+        id: article
+        run: |
+          node -e "
+          const fs = require('fs');
+          const path = require('path');
+          const matter = require('gray-matter');
+          const blogDir = path.join(process.cwd(), 'blog');
+          const files = fs.readdirSync(blogDir).filter(f => f.endsWith('.md')).sort().reverse();
+          for (const file of files) {
+            const raw = fs.readFileSync(path.join(blogDir, file), 'utf8').trim();
+            if (!raw) continue;
+            const { data } = matter(raw);
+            if (data.title) {
+              fs.appendFileSync(process.env.GITHUB_OUTPUT, 'title=' + data.title + '\n');
+              fs.appendFileSync(process.env.GITHUB_OUTPUT, 'summary=' + (data.summary || '') + '\n');
+              break;
+            }
+          }
+          "
+
+      - name: Notify Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          ARTICLE_TITLE: ${{ steps.article.outputs.title }}
+          ARTICLE_SUMMARY: ${{ steps.article.outputs.summary }}
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          curl -s -X POST "$DISCORD_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n \
+              --arg title "$ARTICLE_TITLE" \
+              --arg desc "$ARTICLE_SUMMARY" \
+              --arg url "$SITE_URL" \
+              '{embeds: [{title: $title, description: $desc, url: $url, color: 0}]}')"
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./public/
+          server-dir: /htdocs/
+
+      - name: Validate deployment
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          sleep 15
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$SITE_URL")
+          echo "HTTP status: $STATUS"
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
+            echo "Site accessible — déploiement validé"
+          else
+            echo "Avertissement : le site a retourné HTTP $STATUS"
+          fi
