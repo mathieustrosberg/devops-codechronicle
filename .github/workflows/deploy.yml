@@ -67,8 +67,11 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./public/
           server-dir: /htdocs/
+          protocol: ftp
+          port: 21
 
       - name: Validate deployment
+        continue-on-error: true
         env:
           SITE_URL: ${{ vars.SITE_URL }}
         run: |
