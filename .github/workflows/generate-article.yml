@@ -1,0 +1,65 @@
+name: Generate Article
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Generate article
+        id: generate
+        run: node scripts/generate.js
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Commit generated article
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add blog/
+          git diff --staged --quiet || git commit -m "feat: generate article content"
+          git push origin HEAD:${{ github.head_ref }}
+
+      - name: Save article as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-article
+          path: blog/
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        env:
+          ARTICLE_TITLE: ${{ steps.generate.outputs.title }}
+          ARTICLE_SUMMARY: ${{ steps.generate.outputs.summary }}
+        with:
+          script: |
+            const title = process.env.ARTICLE_TITLE;
+            const summary = process.env.ARTICLE_SUMMARY;
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Article généré\n\n**Titre :** ${title}\n\n**Résumé :** ${summary}`
+            });
