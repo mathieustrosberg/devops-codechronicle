@@ -1,0 +1,14 @@
+{
+  "name": "codechronicle",
+  "version": "1.0.0",
+  "description": "Blog technique automatisé avec génération IA et déploiement sur InfinityFree",
+  "scripts": {
+    "generate": "node scripts/generate.js",
+    "build": "node scripts/build.js"
+  },
+  "dependencies": {
+    "openai": "^4.0.0",
+    "gray-matter": "^4.0.3",
+    "marked": "^9.0.0"
+  }
+}
