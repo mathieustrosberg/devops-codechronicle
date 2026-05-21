@@ -19,23 +19,23 @@ async function generateArticle(filepath) {
 
   const response = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
+    response_format: { type: 'json_object' },
     messages: [
       {
         role: 'user',
         content: `Tu es un expert technique. Génère un article de blog complet en français sur le sujet : "${topic}".
-Réponds UNIQUEMENT avec ce format JSON valide, sans aucun texte autour :
+Réponds UNIQUEMENT avec ce format JSON valide :
 {
   "title": "Le titre de l'article (une seule ligne)",
   "summary": "Un résumé de 2 phrases maximum (une seule ligne)",
   "tags": ["tag1", "tag2", "tag3"],
-  "content": "Le contenu complet en Markdown (sans le frontmatter, minimum 300 mots)"
+  "content": "Le contenu complet en Markdown (sans le frontmatter, minimum 300 mots). Pour les blocs de code, utilise des backticks simples uniquement."
 }`
       }
     ]
   });
 
-  const raw = response.choices[0].message.content.trim();
-  const data = JSON.parse(raw);
+  const data = JSON.parse(response.choices[0].message.content);
 
   const fileContent = `---
 title: "${data.title}"
