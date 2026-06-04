@@ -2,7 +2,7 @@
 title: "Les bases de GitHub : Guide introductif pour les développeurs"
 summary: "Cet article vous présente les concepts fondamentaux de GitHub, une plateforme essentielle pour le versionnage de code et la collaboration. Apprenez à créer un dépôt, à gérer vos contributions et à utiliser les fonctionnalités clés de l'outil."
 tags: ["GitHub", "développement", "versionnage"]
-date: "2026-05-21"
+date: "2025-04-21"
 ---
 
 # Introduction à GitHub

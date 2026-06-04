@@ -40,7 +40,6 @@ function articlePage(title, tags, content, articleSlug) {
     header span { font-family: var(--sans); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--gray); }
     .hero-img { width: 100%; height: 420px; object-fit: cover; display: block; filter: grayscale(100%); }
     main { padding: 4rem 0 8rem; }
-    main .container { }
     .back { font-size: .65rem; letter-spacing: .08em; text-transform: uppercase; color: var(--gray); text-decoration: none; display: inline-block; margin-bottom: 2.5rem; border-bottom: 1px solid transparent; }
     .back:hover { border-bottom-color: var(--gray); }
     h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; line-height: 1.1; letter-spacing: -.02em; margin-bottom: 2rem; }

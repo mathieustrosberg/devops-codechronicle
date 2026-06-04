@@ -49,6 +49,7 @@ jobs:
           path: blog/
 
       - name: Comment on PR
+        if: steps.generate.outputs.title != ''
         uses: actions/github-script@v7
         env:
           ARTICLE_TITLE: ${{ steps.generate.outputs.title }}
